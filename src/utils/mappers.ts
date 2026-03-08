@@ -29,23 +29,16 @@ export const mapInvoices = (raw: any[]): Invoice[] => raw;
 export const mapCustomers = (raw: any[]): Customer[] => raw.map(c => ({
   id: c.id,
   customerId: c.customer_id,
-  customerTaxId: c.customer_tax_id,
-  customerName: c.customer_name,
-  customerEmail: c.customer_email,
-  customerPhone: c.customer_phone,
-  customerAddressLine1: c.customer_address_line1,
-  customerAddressLine2: c.customer_address_line2,
-  customerState: c.customer_state,
-  customerCountryCode: c.customer_country_code,
-  customerPostalCode: c.customer_postal_code,
-  createdAt: c.created_at,
-  updatedAt: c.updated_at,
-  // Add direct mappings for common UI accessors if needed
   taxId: c.customer_tax_id,
   name: c.customer_name,
   email: c.customer_email,
   phone: c.customer_phone,
+  addressLine1: c.customer_address_line1,
+  addressLine2: c.customer_address_line2,
+  state: c.customer_state,
   countryCode: c.customer_country_code,
+  postalCode: c.customer_postal_code,
+  createdAt: c.created_at,
 }));
 
 export const mapAnalytics = (raw: any): AnalyticsData => raw;
@@ -58,7 +51,7 @@ export const mapSettings = (raw: any): SettingsData => ({
     nif: raw.nif || '',
     email: raw.email,
     addressLine1: raw.address_line1 || '',
-    address_line2: raw.address_line2 || '',
+    addressLine2: raw.address_line2 || '',
     city: raw.city || '',
     state: raw.state || '',
     country: raw.country || '',
