@@ -167,7 +167,8 @@ The App machine controls WHEN Home is rendered. Each page machine is independent
 ---
 
 ### API Reference
-Base URL: `https://crimson-einvoice-platform.cfapps.eu10-005.hana.ondemand.com`
+Base URL: `https://documents-web-services.onrender.com`
+Local Base URL: `http://localhost:8000` (configured in `src/constants/urls.ts`)
 Auth: session cookie (`credentials: 'include'`). API key also available in user profile.
 
 | Endpoint                        | Method | Used In         | Response Key                    |

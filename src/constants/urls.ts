@@ -1,5 +1,5 @@
-// TODO: Move BASE_URL to environment variable (e.g. import.meta.env.VITE_API_BASE_URL)
-export const BASE_URL = 'http://localhost:8000';
+// Use environment variable for BASE_URL with the Render service as a fallback
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://documents-web-services.onrender.com';
 
 export const URLS = {
   AUTH_ME: '/auth/me',
