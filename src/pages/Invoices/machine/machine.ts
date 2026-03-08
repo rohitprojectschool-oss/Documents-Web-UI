@@ -51,6 +51,25 @@ const invoicesMachine = createMachine({
             searchQuery: ({ event }) => event.query,
           }),
         },
+        UPLOAD_INVOICE: 'uploading',
+      },
+    },
+    uploading: {
+      invoke: {
+        src: 'uploadInvoice',
+        input: ({ event }) => event.data,
+        onDone: {
+          target: 'loaded',
+          actions: assign({
+            invoices: ({ context, event }) => [event.output, ...context.invoices],
+          }),
+        },
+        onError: {
+          target: 'loaded',
+          actions: assign({
+            error: ({ event }) => (event.error as Error).message,
+          }),
+        },
       },
     },
     error: {

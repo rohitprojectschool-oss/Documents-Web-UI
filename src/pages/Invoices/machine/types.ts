@@ -22,4 +22,5 @@ export type InvoicesEvents =
   | { type: 'REFRESH' }
   | { type: 'SELECT_COUNTRY'; country: string }
   | { type: 'SELECT_STATUS'; status: string }
-  | { type: 'SEARCH'; query: string };
+  | { type: 'SEARCH'; query: string }
+  | { type: 'UPLOAD_INVOICE'; data: any };

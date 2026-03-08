@@ -175,12 +175,20 @@ Auth: session cookie (`credentials: 'include'`). API key also available in user 
 |---------------------------------|--------|-----------------|---------------------------------|
 | `/auth/me`                      | GET    | Home actors     | `data` → UserProfile            |
 | `/api/country-settings/public`  | GET    | Home actors     | `data.countries` → Country[]    |
+| `/api/customers`                | GET    | Customer actors | `data` → Customer[]             |
+| `/api/customers`                | POST   | Customer actors | `data` → Customer               |
+| `/api/invoices`                 | GET    | Invoice actors  | `data` → Invoice[]              |
+| `/api/invoices`                 | POST   | Invoice actors  | `data` → Invoice                |
 
-All actors currently return **dummy data** (see TODO comments in `actors.ts`). Replace with:
-```ts
-const raw = await fetcher.get<RawResponse>(URLS.AUTH_ME);
-return mapUser(raw.data); // write mapper in utils/mappers.ts
-```
+---
+
+### Implemented Pages & Features
+
+#### Add Customer & Upload Invoice
+- Modal forms implemented for both actions.
+- Real-time list updates after successful creation.
+- Form validation and loading states managed by XState.
+- Responsive design for all modals.
 
 ---
 

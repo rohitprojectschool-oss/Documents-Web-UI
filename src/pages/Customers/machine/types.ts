@@ -23,4 +23,5 @@ export interface CustomersContext {
 export type CustomersEvents =
   | { type: 'REFRESH' }
   | { type: 'SELECT_COUNTRY'; country: string }
-  | { type: 'SEARCH'; query: string };
+  | { type: 'SEARCH'; query: string }
+  | { type: 'ADD_CUSTOMER'; data: any };

@@ -45,6 +45,27 @@ const customersMachine = createMachine({
             searchQuery: ({ event }) => event.query,
           }),
         },
+        ADD_CUSTOMER: 'submitting',
+      },
+    },
+    submitting: {
+      invoke: {
+        src: 'addCustomer',
+        input: ({ event }) => event.data,
+        onDone: {
+          target: 'loaded',
+          actions: [
+            assign({
+              customers: ({ context, event }) => [event.output, ...context.customers],
+            }),
+          ],
+        },
+        onError: {
+          target: 'loaded',
+          actions: assign({
+            error: ({ event }) => (event.error as Error).message,
+          }),
+        },
       },
     },
     error: {

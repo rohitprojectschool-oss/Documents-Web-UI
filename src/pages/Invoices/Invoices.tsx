@@ -1,4 +1,5 @@
 import { useMachine } from '@xstate/react';
+import { useState } from 'react';
 import createInvoicesMachine from './machine';
 import { locale } from '../../locale/locale';
 import type { Invoice } from './machine/types';
@@ -26,8 +27,19 @@ const STATUSES = [
   { value: 'rejected', label: 'Rejected' },
 ];
 
+const INITIAL_FORM = {
+  sourceReference: '',
+  customer: '',
+  grossAmount: '',
+  docType: 'Standard Invoice',
+  countryCode: 'AO',
+  countryName: 'Angola',
+};
+
 function Invoices() {
   const [state, send] = useMachine(createInvoicesMachine());
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState(INITIAL_FORM);
 
   if (state.matches('loading')) {
     return <div className="invoices__loading">{locale('common.loading')}</div>;
@@ -43,6 +55,19 @@ function Invoices() {
   }
 
   const { invoices, selectedCountry, selectedStatus, searchQuery } = state.context;
+  const isUploading = state.matches('uploading');
+
+  const handleUploadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const data = {
+      ...formData,
+      grossAmount: parseFloat(formData.grossAmount),
+      countryName: COUNTRIES.find(c => c.code === formData.countryCode)?.name || formData.countryName
+    };
+    send({ type: 'UPLOAD_INVOICE', data });
+    setShowModal(false);
+    setFormData(INITIAL_FORM);
+  };
 
   const filtered = invoices.filter((inv) => {
     if (selectedCountry !== 'all' && inv.countryCode !== selectedCountry) return false;
@@ -65,13 +90,87 @@ function Invoices() {
           <h1 className="invoices__title">{locale('invoices.title')}</h1>
           <p className="invoices__subtitle">{locale('invoices.subtitle')}</p>
         </div>
-        <button className="invoices__upload-btn">
+        <button 
+          className="invoices__upload-btn"
+          onClick={() => setShowModal(true)}
+          disabled={isUploading}
+        >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
           </svg>
-          {locale('invoices.upload')}
+          {isUploading ? 'Uploading...' : locale('invoices.upload')}
         </button>
       </div>
+
+      {showModal && (
+        <div className="invoices__modal-overlay">
+          <div className="invoices__modal">
+            <div className="invoices__modal-header">
+              <h2>Upload Invoice</h2>
+              <button className="invoices__modal-close" onClick={() => setShowModal(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleUploadSubmit} className="invoices__form">
+              <div className="invoices__form-grid">
+                <div className="invoices__form-field">
+                  <label>Source Reference</label>
+                  <input 
+                    required 
+                    value={formData.sourceReference}
+                    onChange={e => setFormData({...formData, sourceReference: e.target.value})}
+                    placeholder="e.g. REF-123"
+                  />
+                </div>
+                <div className="invoices__form-field">
+                  <label>Customer Name</label>
+                  <input 
+                    required 
+                    value={formData.customer}
+                    onChange={e => setFormData({...formData, customer: e.target.value})}
+                    placeholder="e.g. Acme Corp"
+                  />
+                </div>
+                <div className="invoices__form-field">
+                  <label>Gross Amount</label>
+                  <input 
+                    required 
+                    type="number"
+                    step="0.01"
+                    value={formData.grossAmount}
+                    onChange={e => setFormData({...formData, grossAmount: e.target.value})}
+                    placeholder="0.00"
+                  />
+                </div>
+                <div className="invoices__form-field">
+                  <label>Document Type</label>
+                  <select 
+                    value={formData.docType}
+                    onChange={e => setFormData({...formData, docType: e.target.value})}
+                  >
+                    <option value="Standard Invoice">Standard Invoice</option>
+                    <option value="Credit Note">Credit Note</option>
+                    <option value="Debit Note">Debit Note</option>
+                  </select>
+                </div>
+                <div className="invoices__form-field">
+                  <label>Country</label>
+                  <select 
+                    value={formData.countryCode}
+                    onChange={e => setFormData({...formData, countryCode: e.target.value})}
+                  >
+                    {COUNTRIES.filter(c => c.code !== 'all').map(c => (
+                      <option key={c.code} value={c.code}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="invoices__modal-footer">
+                <button type="button" className="invoices__btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="invoices__btn-primary">Upload Document</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div className="invoices__filters">
         <div className="invoices__filter-group">
