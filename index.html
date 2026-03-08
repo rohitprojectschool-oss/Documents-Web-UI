@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/assets/images/logos/icon-crimson.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crimson | E-Invoicing Platform</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Apply theme BEFORE React renders to prevent flash -->
+    <script>
+      (function() {
+        const path = window.location.pathname;
+        const isPublicRoute = path === '/' || path === '/login' || path === '/home';
+
+        document.documentElement.classList.remove('light', 'dark');
+
+        if (isPublicRoute) {
+          document.documentElement.classList.add('light');
+        } else {
+          const savedTheme = localStorage.getItem('crimson:theme');
+          if (savedTheme === 'light' || savedTheme === 'dark') {
+            document.documentElement.classList.add(savedTheme);
+          } else {
+            document.documentElement.classList.add('light');
+          }
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

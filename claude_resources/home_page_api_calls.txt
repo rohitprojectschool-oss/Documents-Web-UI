@@ -1,0 +1,96 @@
+"https://crimson-einvoice-platform.cfapps.eu10-005.hana.ondemand.com/auth/me"
+
+Request Method
+GET
+Status Code
+
+
+{
+    "success": true,
+    "message": "ok",
+    "data": {
+        "user_id": "d8b00da2-b84f-41d7-bc6f-b0bde022243a",
+        "email": "client@test.com",
+        "name": "client",
+        "client_name": "DEMO USER",
+        "address_line1": null,
+        "address_line2": null,
+        "city": null,
+        "state": null,
+        "country": null,
+        "postal_code": null,
+        "bank_name": null,
+        "bank_beneficiary_name": "See information below on \"Informações Adicionais\"",
+        "bank_beneficial_account_number": null,
+        "bank_swift_code": null,
+        "bank_iban": null,
+        "bank_currency": null,
+        "role_type": [
+            "USER"
+        ],
+        "status": "ACTIVE",
+        "allowed_countries": [
+            "AO",
+            "NG",
+            "GR"
+        ],
+        "is_partner": false,
+        "auto_submit": true,
+        "api_key": "pk_Z3OTnqn3wRYFSiCmsLfOUvskRjLCy49c",
+        "last_login": null,
+        "created_at": "2025-12-22T09:27:58.505743Z",
+        "updated_at": "2026-02-20T11:59:37.238376Z",
+        "uploads_enabled": true,
+        "environment_preference": null,
+        "has_brand_logo": false
+    }
+}
+
+
+https://crimson-einvoice-platform.cfapps.eu10-005.hana.ondemand.com/api/country-settings/public
+
+{
+    "status": true,
+    "data": {
+        "countries": [
+            {
+                "country_code": "AO",
+                "country_name": "Angola",
+                "flag_emoji": null,
+                "display_order": 0,
+                "region": null
+            },
+            {
+                "country_code": "EE",
+                "country_name": "Estonia",
+                "flag_emoji": null,
+                "display_order": 0,
+                "region": null
+            },
+            {
+                "country_code": "GR",
+                "country_name": "Greece",
+                "flag_emoji": null,
+                "display_order": 0,
+                "region": null
+            },
+            {
+                "country_code": "NG",
+                "country_name": "Nigeria",
+                "flag_emoji": null,
+                "display_order": 0,
+                "region": null
+            },
+            {
+                "country_code": "SA",
+                "country_name": "Saudi Arabia",
+                "flag_emoji": null,
+                "display_order": 0,
+                "region": null
+            }
+        ],
+        "sort_mode": "alphabetical",
+        "use_only_configured": true,
+        "show_empty_countries": false
+    }
+}

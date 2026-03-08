@@ -1,0 +1,73 @@
+-
+
+Follow these conventions
+
+1. Use xstate with state machines
+2. Maintain the component logic separate from machine logic, the logic should be only in state machines.
+3. We need to have a component as per the following structure:
+Component
+    - Component.tsx
+    - Component.scss
+    - machine
+        - index.ts
+        - machine.ts
+        - actors.ts
+        - guards.ts
+        - actions.ts
+        - types.ts
+- actors contain all the service calls. So, we shouldn't import the actors, guards etc. in machine.ts, they should be passed using index.ts using machine.provide
+
+eg.
+const machine = createMachine({
+    id: "machine",
+    initial...
+    context: ({input}):...
+    states:{
+        ...
+    }
+    // if using ac=pi calls,
+    fetchUsers:{
+        invoke:{
+            src: "fetchUsers",
+            input: ({context, event}=>{
+                
+            },
+            onDone:{},....)
+        }
+    }
+})
+export default assignLotMachine;
+
+index.ts
+
+export default (additionalActions) =>
+machine.provide({actions: .{..actions, ...additionalActions},
+actors, guards});
+
+actors.ts
+export const fetchUsers = fromPromise(
+    async ({input}):{
+        const url = getApplicationTypeUrl;
+        return fetcherget(url).then()...
+    }
+)
+
+Inside component,
+
+const [state, send] = useMachine(machine({dismiss}), {
+    input:{
+        a: 2
+    }
+})
+
+Use state.matches send({type: "ASSIGN", data: {...}})
+
+4. Check for labels.ts - in locale -> en -> labels in which exported labels are present. Use the labels in headers etc. like local("allocation.id") - locale.ts has default localeParser
+
+5. Use index/constants for constants and index/utils for utils
+
+6. Whenever making an api call, use mappers. Write a mapped fetcher and use it everywhere instead of fetcher.
+
+7. If a component can be reuseable or its a separate component, it has to be under /components folder
+
+8. After everything, maintain a file called app_guide and update the info all the info about the app so that the next time I use agent, it can continue reading about the app and get the understanding of the entire application.

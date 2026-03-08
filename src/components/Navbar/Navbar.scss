@@ -1,0 +1,191 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 64px;
+  background: #050810; // Very dark navy/black as in image
+  border-bottom: 2px solid #10b981; // The green line at the bottom
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 140px;
+  }
+
+  &__logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: 20px; // More space between items
+    height: 100%;
+  }
+
+  &__nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 10px 10px 0 0; // Rounded top corners
+    border: none;
+    background: transparent;
+    color: #94a3b8; // Light gray text
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); // Smooth cubic-bezier for natural feel
+    height: 44px;
+    position: relative;
+    margin-top: 8px;
+    transform: translateY(0); // Base position
+
+    svg {
+      color: #94a3b8;
+      transition: color 0.3s ease;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      transform: translateY(-4px); // Lift up by approx 1-2mm
+      
+      svg {
+        color: #ffffff;
+      }
+    }
+
+    &--active {
+      background: #1e293b; // Slightly lighter background for active tab
+      color: #ffffff;
+      transform: translateY(-4px); // Keep active tab raised as well
+      
+      svg {
+        color: #e53e3e; // Red icon for active
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 10%;
+        right: 10%;
+        height: 3px;
+        background: #e53e3e; // Red underline
+        border-radius: 2px 2px 0 0;
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 140px;
+    justify-content: flex-end;
+  }
+
+  &__icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid #1e293b;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+
+    &:hover {
+      color: #ffffff;
+      background: #1e293b;
+    }
+
+    &--active {
+      color: #e53e3e;
+      border-color: #e53e3e;
+    }
+  }
+
+  &__user-menu {
+    position: relative;
+  }
+
+  &__dropdown-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 220px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    z-index: 201;
+    overflow: hidden;
+  }
+
+  &__dropdown-user {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  &__dropdown-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+  }
+
+  &__dropdown-email {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  &__dropdown-divider {
+    height: 1px;
+    background: #334155;
+  }
+
+  &__dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 16px;
+    border: none;
+    background: transparent;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.12s ease;
+
+    &:hover {
+      background: #334155;
+    }
+
+    &--danger {
+      color: #ef4444;
+    }
+  }
+}

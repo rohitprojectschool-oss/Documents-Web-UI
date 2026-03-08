@@ -1,0 +1,262 @@
+## Crimson – E-Invoicing Platform (Frontend)
+
+---
+
+### What is this app?
+Crimson is a **multi-country e-invoicing portal** for businesses to submit, track, and manage electronic invoices (fiscal documents) to tax authorities. Each user belongs to a client company and can operate in one or more countries (e.g. Angola, Nigeria, Greece). Documents go through a processing workflow: submitted → processed → Accepted by Agt / Rejected by Agt.
+
+---
+
+### Business Domain
+
+#### Document Types
+| Type              | Description                                    |
+|-------------------|------------------------------------------------|
+| Standard Invoice  | Primary fiscal document (~87% of volume)       |
+| Credit Note       | Issued to reduce a previously billed amount    |
+| Debit Note        | Issued to increase a previously billed amount  |
+| Other Receipt     | Miscellaneous fiscal receipts                  |
+
+#### Document Statuses
+| Status          | Meaning                                                    |
+|-----------------|------------------------------------------------------------|
+| Pending         | Submitted, awaiting processing                             |
+| Accepted By Agt | Processed and accepted by the fiscal authority/agent       |
+| Rejected By Agt | Processed but rejected by the fiscal authority/agent       |
+
+#### Document ID Format
+`FT FT3926S2781N/151` — "FT" likely denotes a Fiscal Tax document. The trailing number is sequential per submission batch.
+
+#### Table Fields (Recent Documents)
+- **DOC ID** — Internal fiscal document identifier
+- **Source Reference** — Client's own internal reference for the transaction
+- **Customer** — End customer/buyer name
+- **Gross Amount** — Total invoice value (displayed in K = thousands)
+- **Created** — Date document was submitted to the platform
+- **Status** — Current processing status (Accepted / Rejected / Pending)
+- **Doc Type** — Type of fiscal document (Standard Invoice, Credit Note, etc.)
+
+#### Multi-Country Setup
+Users are assigned `allowed_countries` (e.g. `["AO", "NG", "GR"]`). The platform enforces per-country visibility — a user only sees documents for their allowed countries. Country distribution on the dashboard reflects this (e.g. Angola 95%, Nigeria 5%). Countries configured on the platform (`/api/country-settings/public`) may be a superset of a user's allowed countries.
+
+#### User Roles & Permissions
+- `role_type`: currently `["USER"]`; future roles likely include ADMIN, PARTNER, AUDITOR
+- `is_partner`: boolean — partners may have elevated access across clients
+- `auto_submit`: if true, documents are submitted automatically without manual confirmation
+- `uploads_enabled`: controls whether the Upload button is visible/active
+- `api_key`: programmatic access key for the client (`pk_...`)
+
+---
+
+### Stack
+- React 19 + TypeScript, Vite
+- **XState v5** + `@xstate/react` — all business and page logic in state machines
+- **React Router v6** — URL routing (nested routes, `<Outlet>`)
+- **Recharts** — `AreaChart` (Document Activity), `PieChart` (Country Distribution)
+- **Sass** — component-scoped `.scss` per BEM convention
+- IBM Plex Sans — loaded via Google Fonts in `index.html`
+
+---
+
+### Architecture
+
+```
+src/
+  App/                        Root component + minimal app machine
+    App.tsx                   BrowserRouter + nested Routes; renders <Home /> when app.matches('home')
+    machine/
+      machine.ts              States: home (future: login, unauthorized, maintenance)
+      actors.ts               Empty — future: session validation, feature flags, env config
+      types.ts                AppContext (empty for now), AppEvents (LOGOUT)
+
+  pages/
+    Home/                     Shell layout: loads init data, renders Navbar + <Outlet />
+      Home.tsx                Runs homeMachine; URL synced to machine state via useEffect
+      machine/
+        machine.ts            parallel loading (user + countries) → ready → { dashboard | invoices | ... }
+        actors.ts             fetchUser (→ /auth/me), fetchCountries (→ /api/country-settings/public)
+        guards.ts             isDashboard, isInvoices, isCustomers, isAnalytics, isSettings, isUsers
+        types.ts              UserProfile, Country, HomeRoute, HomeContext, HomeEvents
+
+    Dashboard/                Overview page — stats summary + 3 charts + recent documents table
+      Dashboard.tsx           Recharts AreaChart (activity) + PieChart (country) + CSS progress bars (doc types)
+      machine/
+        machine.ts            loading → loaded | error; REFRESH event reloads
+        actors.ts             fetchDashboardData (stats, activityData, countryData, docDistribution, recentDocuments)
+        types.ts              StatsSummary, ActivityPoint, CountryShare, DocTypeShare, RecentDocument
+
+    Invoices/                 Document list/management — stub, idle machine
+    Customers/                Customer directory — stub, idle machine
+    Analytics/                Deeper analytics — stub, idle machine
+    Settings/                 User/account settings — stub, idle machine
+    Users/                    User management panel — stub, idle machine
+
+  components/
+    Navbar/                   Sticky top bar; logo, nav tabs (Dashboard/Invoices/Customers/Analytics),
+                              settings icon, user icon. Pure display — receives activeRoute + onNavigate.
+    StatCard/                 Reusable card: title, large numeric value, coloured icon circle
+
+  locale/
+    en/labels.ts              All UI strings — edit here to change copy
+    locale.ts                 locale("nav.dashboard") → string; dot-path lookup into labels
+
+  constants/
+    index.ts                  ROUTES enum and Route type
+    urls.ts                   BASE_URL + URLS map (AUTH_ME, COUNTRY_SETTINGS) — TODO: env var
+
+  utils/
+    fetcher.ts                Base fetcher.get / fetcher.post; uses BASE_URL; credentials: include (session cookie)
+    index.ts                  formatAmount (→ "6.8K"), formatDate helpers
+```
+
+---
+
+### Routing
+| Path          | Component  | Notes                              |
+|---------------|------------|------------------------------------|
+| `/`           | redirect   | → /dashboard                       |
+| `/dashboard`  | Dashboard  | Overview, stats, charts            |
+| `/invoices`   | Invoices   | Document list (stub)               |
+| `/customers`  | Customers  | Customer management (stub)         |
+| `/analytics`  | Analytics  | Deep analytics (stub)              |
+| `/settings`   | Settings   | Account/platform settings (stub)   |
+| `/users`      | Users      | User management panel (stub)       |
+| `/*`          | redirect   | → /dashboard                       |
+
+Navigation flows: user clicks Navbar → `send({ type: 'NAVIGATE', route })` → homeMachine transitions state → `useEffect` calls `navigate('/${route}')` → React Router renders matching `<Route>`.
+
+---
+
+### Machine Hierarchy
+```
+App machine (auth gateway)
+  └─ Home machine (data loading + routing)
+       ├─ Dashboard machine (stats + charts)
+       ├─ Invoices machine (stub)
+       ├─ Customers machine (stub)
+       ├─ Analytics machine (stub)
+       ├─ Settings machine (stub)
+       └─ Users machine (stub)
+```
+The App machine controls WHEN Home is rendered. Each page machine is independent and only runs while its route is active.
+
+---
+
+### Convention (from claude_conventions)
+1. **All logic in machines** — components only call `send(...)` and read `state.matches(...)`
+2. **Machine file layout per component**:
+   ```
+   ComponentName/
+     ComponentName.tsx
+     ComponentName.scss
+     machine/
+       index.ts      ← machine.provide({ actions, actors, guards }) — export default (additionalActions) => ...
+       machine.ts    ← createMachine; references actors/guards/actions by STRING name only
+       actors.ts     ← fromPromise(...) service calls
+       guards.ts     ← pure guard functions
+       actions.ts    ← action functions
+       types.ts      ← Context, Events, Input interfaces
+   ```
+3. **Actors not imported in machine.ts** — provided via `index.ts` using `machine.provide`
+4. **Labels** — always use `locale("section.key")`, never hardcode strings
+5. **API calls** — use `fetcher.get(URLS.*)`, apply a mapper, export as `fromPromise` actor
+6. **URL constants** — only in `src/constants/urls.ts`
+7. **Reusable components** → `src/components/`
+8. **Machines for components** — add a `machine/` folder if the component has non-trivial state logic
+
+---
+
+### API Reference
+Base URL: `https://crimson-einvoice-platform.cfapps.eu10-005.hana.ondemand.com`
+Auth: session cookie (`credentials: 'include'`). API key also available in user profile.
+
+| Endpoint                        | Method | Used In         | Response Key                    |
+|---------------------------------|--------|-----------------|---------------------------------|
+| `/auth/me`                      | GET    | Home actors     | `data` → UserProfile            |
+| `/api/country-settings/public`  | GET    | Home actors     | `data.countries` → Country[]    |
+
+All actors currently return **dummy data** (see TODO comments in `actors.ts`). Replace with:
+```ts
+const raw = await fetcher.get<RawResponse>(URLS.AUTH_ME);
+return mapUser(raw.data); // write mapper in utils/mappers.ts
+```
+
+---
+
+### Dashboard Data Shape (current mock)
+```
+stats:            { totalDocuments: 185, pending: 0, completed: 111, rejected: 64 }
+activityData:     [{ date: 'Mar 1', count: 2 }, ...] — 7 days
+countryData:      [{ name: 'Angola', value: 95, color: '#e53e3e' }, ...]
+docDistribution:  [{ type: 'Standard Invoice', percentage: 87, color: '#e53e3e' }, ...]
+recentDocuments:  [{ docId, sourceReference, customer, grossAmount, created, status, docType }]
+```
+
+---
+
+### Theme System
+- `html.dark` / `html.light` classes applied before React renders (script in `index.html`)
+- CSS variables defined in `src/index.css` under `html.dark { }` and `html.light { }`
+- Portal routes → saved theme from `localStorage('crimson:theme')`, default: light
+- Public routes (`/`, `/login`, `/home`) → always light
+- Key variables: `--color-bg`, `--color-card`, `--color-surface`, `--color-border`, `--color-text-primary`, `--color-text-secondary`, `--color-accent` (#e53e3e red), `--color-success` (#48bb78), `--color-warning` (#ecc94b)
+
+---
+
+### Implemented Pages & Features
+
+#### Theme Toggle (Navbar)
+- Navbar now has its own machine (`src/components/Navbar/machine/`) managing `dropdownOpen` and `theme` state.
+- Clicking the user icon opens a dropdown with: user name/email, Light/Dark Mode toggle, Sign Out button.
+- Theme toggle updates `document.documentElement.className` and saves to `localStorage('crimson:theme')`.
+- Navbar receives `user: UserProfile | null` prop from Home.tsx; `onSignOut` is optional.
+- Machine pattern: inline `assign` in `machine.ts` (avoids XState v5 type inference issues with external `assign` functions).
+
+#### Invoices Page (`src/pages/Invoices/`)
+- Full implementation: status tabs (All/Pending/Accepted/Rejected), country selector, search input, document table.
+- Machine: loading → loaded | error; events: REFRESH, SELECT_COUNTRY, SELECT_STATUS, SEARCH.
+- Filtering is client-side (from context).
+- Country column added to table with badge display.
+- Status badges: green (accepted), red (rejected), yellow (pending).
+
+#### Customers Page (`src/pages/Customers/`)
+- Two-panel layout: left sidebar (country filter with emoji flags + counts), right panel (table + search).
+- Machine: loading → loaded | error; events: REFRESH, SELECT_COUNTRY, SEARCH.
+- Customer data from `customers.txt` (9 customers across AO, NG, PT, SA).
+- Country flags via `COUNTRY_FLAGS` map (code → emoji).
+- Table: CUSTOMER ID, TAX ID, NAME, EMAIL, PHONE, COUNTRY (flag + name + code), ACTIONS (edit/delete icons).
+- Header buttons: Download, Upload, Add Customer.
+
+#### Analytics Page (`src/pages/Analytics/`)
+- KPI cards: Total Documents, Acceptance Rate, Rejection Rate, Active Countries.
+- Monthly trends: recharts `AreaChart` with multi-country overlaid areas (AO/NG/PT/SA).
+- Doc type breakdown: recharts `PieChart`.
+- Country comparison: recharts `BarChart` (accepted/rejected/pending per country).
+- Country stats table with acceptance rate bar.
+- Machine: loading → loaded | error; event: REFRESH.
+
+#### Settings Page (`src/pages/Settings/`)
+- Two-column layout matching design:
+  - Left: Profile Information (name, NIF, email, address fields, brand image uploader, Save Profile).
+  - Right: Invoice Terms (with edit toggle), Change Password, API Credentials (show/copy/generate), Auto Submit toggle.
+- Bottom: Purge Invoice Workspace danger zone.
+- Local React state for form values and UI toggles (autoSubmit, showApiKey, editingTerms).
+- Machine: loading → loaded | error; events: REFRESH, SAVE.
+
+---
+
+### TODO / Next Steps
+- [ ] Replace all dummy actors with real `fetcher.get` + mapper calls
+- [ ] Add `utils/mappers.ts` with `mapUser`, `mapCountries`, `mapCustomers`, `mapInvoices` functions
+- [ ] Move `BASE_URL` to `import.meta.env.VITE_API_BASE_URL`
+- [ ] Add URLS for: INVOICES, CUSTOMERS, ANALYTICS, SETTINGS_SAVE, PASSWORD_CHANGE, API_KEY_GENERATE
+- [ ] Implement Users panel (admin role only)
+- [ ] Add auth flow to app machine (login screen, token/session expiry redirect)
+- [ ] Initialize home machine's active route from URL on direct page load (currently always starts at dashboard)
+- [ ] Settings: wire up Save Profile, Update Password, Generate New Key, Save Settings, Clear Invoices to real APIs
+- [ ] Invoices: add pagination (currently shows all)
+- [ ] Customers: add actual edit/delete customer functionality
+- [ ] Analytics: add date range picker for filtering trends
+- [ ] Decide upload flow for the Upload buttons (Dashboard, Invoices)
+- [ ] Add sign out handler to App machine (currently `onSignOut` is a no-op in Navbar)
+- [ ] Consider code-splitting recharts + xstate (~719KB bundle) via dynamic `import()`

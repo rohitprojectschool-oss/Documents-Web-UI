@@ -1,0 +1,45 @@
+{
+    "status": true,
+    "data": {
+        "countries": [
+            {
+                "country_code": "AO",
+                "country_name": "Angola",
+                "flag_emoji": null,
+                "display_order": 0,
+                "region": null
+            },
+            {
+                "country_code": "EE",
+                "country_name": "Estonia",
+                "flag_emoji": null,
+                "display_order": 0,
+                "region": null
+            },
+            {
+                "country_code": "GR",
+                "country_name": "Greece",
+                "flag_emoji": null,
+                "display_order": 0,
+                "region": null
+            },
+            {
+                "country_code": "NG",
+                "country_name": "Nigeria",
+                "flag_emoji": null,
+                "display_order": 0,
+                "region": null
+            },
+            {
+                "country_code": "SA",
+                "country_name": "Saudi Arabia",
+                "flag_emoji": null,
+                "display_order": 0,
+                "region": null
+            }
+        ],
+        "sort_mode": "alphabetical",
+        "use_only_configured": true,
+        "show_empty_countries": false
+    }
+}

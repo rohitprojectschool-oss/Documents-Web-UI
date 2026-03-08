@@ -1,0 +1,13 @@
+.users {
+  padding: 28px 32px;
+
+  &__header { margin-bottom: 24px; }
+
+  &__title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  &__placeholder { color: var(--color-text-secondary); font-size: 14px; }
+}

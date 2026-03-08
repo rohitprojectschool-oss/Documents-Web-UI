@@ -1,0 +1,15 @@
+<!-- Follow the /Users/rohit_kalavapudi/Projects/Documents web/frontend/claude_conventions file for general conventions.
+
+- Now, first thing you're going to do is to create a component like this
+![alt text](image.png)
+- For this, build a parent machine which is called from app.ts - which doesn't have much logic for now but later will have permissions and all
+Now from home page, create a parent machine for all the routes etc. as shown in the picture - for dealing with dashboard, invoices, etc. and settings and users panel etc. create proper structures and use the conventions as specified. -->
+
+
+Now, that the above instructions are successfully executed, follow the next steps
+- 
+![alt text](image-1.png) - we need to have a toggle light mode and dark mode option
+- ![alt text](image-2.png) - this is invoices page - 
+- ![alt text](image-3.png) - this is customers page refer /Users/rohit_kalavapudi/Projects/Documents web/frontend/claude_resources
+- /Users/rohit_kalavapudi/Projects/Documents web/frontend/claude_resources - this is analytics page - 
+- ![alt text](image-4.png) - this is settings

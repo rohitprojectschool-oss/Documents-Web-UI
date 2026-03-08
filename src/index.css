@@ -1,0 +1,60 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button { font-family: inherit; }
+
+/* ── Dark Theme ──────────────────────────────── */
+html.dark {
+  --color-bg:             #0d1117;
+  --color-navbar:         #0d1117;
+  --color-surface:        #161b27;
+  --color-card:           #1a2032;
+  --color-border:         #2a3144;
+  --color-text-primary:   #e2e8f0;
+  --color-text-secondary: #718096;
+  --color-accent:         #e53e3e;
+  --color-success:        #48bb78;
+  --color-warning:        #ecc94b;
+  --color-error:          #e53e3e;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  color-scheme: dark;
+}
+
+/* ── Light Theme ─────────────────────────────── */
+html.light {
+  --color-bg:             #f7f8fc;
+  --color-navbar:         #ffffff;
+  --color-surface:        #f0f2f7;
+  --color-card:           #ffffff;
+  --color-border:         #e2e6f0;
+  --color-text-primary:   #1a202c;
+  --color-text-secondary: #718096;
+  --color-accent:         #e53e3e;
+  --color-success:        #38a169;
+  --color-warning:        #d69e2e;
+  --color-error:          #e53e3e;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  color-scheme: light;
+}
