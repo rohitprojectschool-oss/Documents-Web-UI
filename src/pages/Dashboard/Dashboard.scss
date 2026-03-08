@@ -1,7 +1,11 @@
 .dashboard {
-  padding: 28px 32px;
+  padding: 16px;
   max-width: 1400px;
   margin: 0 auto;
+
+  @media (min-width: 768px) {
+    padding: 28px 32px;
+  }
 
   &__loading,
   &__error {
@@ -15,9 +19,15 @@
 
   &__header {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 16px;
     margin-bottom: 24px;
+
+    @media (min-width: 640px) {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
   }
 
   &__title {
@@ -55,17 +65,29 @@
   // Stat cards
   &__stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr;
     gap: 16px;
     margin-bottom: 20px;
+
+    @media (min-width: 480px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
   }
 
   // Charts row
   &__charts {
     display: grid;
-    grid-template-columns: 1.6fr 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 16px;
     margin-bottom: 20px;
+
+    @media (min-width: 1100px) {
+      grid-template-columns: 1.6fr 1fr 1fr;
+    }
   }
 
   &__chart-card {
@@ -73,10 +95,6 @@
     border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 20px;
-
-    &--wide {
-      // already takes 1.6fr
-    }
   }
 
   &__chart-header {

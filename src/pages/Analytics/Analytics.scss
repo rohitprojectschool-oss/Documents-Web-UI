@@ -1,11 +1,21 @@
 .analytics {
-  padding: 28px 32px;
+  padding: 16px;
+
+  @media (min-width: 768px) {
+    padding: 28px 32px;
+  }
 
   &__header {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 16px;
     margin-bottom: 24px;
+
+    @media (min-width: 640px) {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
   }
 
   &__title {
@@ -23,8 +33,9 @@
   &__refresh-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 7px;
-    padding: 7px 14px;
+    padding: 8px 14px;
     background: transparent;
     border: 1px solid var(--color-border);
     border-radius: 8px;
@@ -32,6 +43,10 @@
     font-size: 13px;
     cursor: pointer;
     transition: all 0.13s;
+
+    @media (min-width: 640px) {
+      padding: 7px 14px;
+    }
 
     &:hover {
       color: var(--color-text-primary);
@@ -41,16 +56,28 @@
 
   &__kpis {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr;
     gap: 16px;
     margin-bottom: 20px;
+
+    @media (min-width: 480px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
   }
 
   &__charts {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr;
     gap: 16px;
     margin-bottom: 16px;
+
+    @media (min-width: 1100px) {
+      grid-template-columns: 2fr 1fr;
+    }
   }
 
   &__chart-card {
@@ -58,8 +85,6 @@
     border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 20px;
-
-    &--wide { /* already handled by grid */ }
 
     &--full {
       margin-bottom: 16px;
@@ -76,6 +101,7 @@
       font-size: 14px;
       font-weight: 600;
       color: var(--color-text-primary);
+      margin: 0;
     }
   }
 
@@ -84,7 +110,9 @@
     border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 20px;
-    overflow: hidden;
+    overflow-x: auto;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
   }
 
   &__table {
