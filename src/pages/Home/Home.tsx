@@ -6,6 +6,15 @@ import Navbar from '../../components/Navbar/Navbar';
 import type { HomeRoute } from './machine/types';
 import './Home.scss';
 
+const CrimsonLoader = () => (
+  <div className="crimson-loader-wrapper">
+    <div className="crimson-loader">
+      <div className="crimson-loader-logo">C</div>
+    </div>
+    <div className="crimson-loader-text">Crimson</div>
+  </div>
+);
+
 function Home() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,7 +42,7 @@ function Home() {
   if (state.matches('loading')) {
     return (
       <div className="home__loader">
-        <div className="home__loader-spinner" />
+        <CrimsonLoader />
       </div>
     );
   }

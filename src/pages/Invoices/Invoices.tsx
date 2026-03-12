@@ -30,6 +30,15 @@ const DATE_RANGES: { value: DateRange; labelKey: string }[] = [
   { value: 'customDays', labelKey: 'invoices.customDays' },
 ];
 
+const CrimsonLoader = () => (
+  <div className="crimson-loader-wrapper">
+    <div className="crimson-loader">
+      <div className="crimson-loader-logo">C</div>
+    </div>
+    <div className="crimson-loader-text">Crimson</div>
+  </div>
+);
+
 function Invoices() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [state, send] = useMachine(createInvoicesMachine());
@@ -37,8 +46,7 @@ function Invoices() {
   if (state.matches('loading')) {
     return (
       <div className="invoices__loading">
-        <div className="home__loader-spinner" />
-        <p>{locale('common.loading')}</p>
+        <CrimsonLoader />
       </div>
     );
   }
