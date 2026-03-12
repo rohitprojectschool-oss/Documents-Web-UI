@@ -33,10 +33,15 @@ const invoicesMachine = createMachine({
     loading: {
       invoke: {
         src: 'fetchInvoices',
+        input: ({ context }) => ({
+          status: context.selectedStatus,
+          countryCode: context.selectedCountry,
+          dateRange: context.dateRange,
+        }),
         onDone: {
           target: 'loaded',
           actions: assign({
-            invoices: ({ event }) => event.output,
+            invoices: ({ event }) => event.output as Invoice[],
           }),
         },
         onError: {
@@ -51,16 +56,19 @@ const invoicesMachine = createMachine({
       on: {
         REFRESH: 'loading',
         SELECT_COUNTRY: {
+          target: 'loading',
           actions: assign({
             selectedCountry: ({ event }) => event.country,
           }),
         },
         SELECT_STATUS: {
+          target: 'loading',
           actions: assign({
             selectedStatus: ({ event }) => event.status,
           }),
         },
         SELECT_DATE_RANGE: {
+          target: 'loading',
           actions: assign({
             dateRange: ({ event }) => event.range,
           }),
@@ -71,6 +79,7 @@ const invoicesMachine = createMachine({
           }),
         },
         CLEAR_FILTERS: {
+          target: 'loading',
           actions: assign({
             selectedCountry: 'all',
             selectedStatus: 'all',
@@ -117,7 +126,6 @@ const invoicesMachine = createMachine({
         input: ({ context }) => ({
           ...context.formData,
           grossAmount: parseFloat(context.formData.grossAmount || '0'),
-          // countryName is handled by actor or backend usually, but for completeness:
           countryName: context.formData.countryCode === 'AO' ? 'Angola' : 
                        context.formData.countryCode === 'NG' ? 'Nigeria' :
                        context.formData.countryCode === 'PT' ? 'Portugal' :
@@ -127,7 +135,7 @@ const invoicesMachine = createMachine({
         onDone: {
           target: 'loaded',
           actions: assign({
-            invoices: ({ context, event }) => [event.output, ...context.invoices],
+            invoices: ({ context, event }) => [event.output as Invoice, ...context.invoices],
             showModal: false,
             formData: { ...INITIAL_FORM },
           }),

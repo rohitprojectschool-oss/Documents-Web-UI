@@ -1,11 +1,47 @@
 import { fromPromise } from 'xstate';
-import type { Invoice } from './types';
+import type { Invoice, DateRange } from './types';
 import { fetcher } from '../../../utils/fetcher';
 import { URLS } from '../../../constants/urls';
 import { mapInvoices } from '../../../utils/mappers';
 
-export const fetchInvoices = fromPromise(async (): Promise<Invoice[]> => {
-  const response: any = await fetcher.get(URLS.INVOICES);
+export const fetchInvoices = fromPromise(async ({ input }: { input: any }): Promise<Invoice[]> => {
+  const params = new URLSearchParams();
+  
+  if (input.status && input.status !== 'all') {
+    params.append('status', input.status);
+  }
+  
+  if (input.countryCode && input.countryCode !== 'all') {
+    params.append('countryCode', input.countryCode);
+  }
+
+  // Handle Date Range
+  if (input.dateRange && input.dateRange !== 'all') {
+    const now = new Date();
+    let start = new Date();
+    
+    if (input.dateRange === 'today') {
+      start.setHours(0, 0, 0, 0);
+    } else if (input.dateRange === 'thisWeek') {
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+      start = new Date(now.setDate(diff));
+      start.setHours(0, 0, 0, 0);
+    } else if (input.dateRange === 'thisMonth') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (input.dateRange === 'thisYear') {
+      start = new Date(now.getFullYear(), 0, 1);
+    }
+
+    const formatDate = (d: Date) => d.toISOString().split('T')[0];
+    params.append('startDate', formatDate(start));
+    params.append('endDate', formatDate(new Date()));
+  }
+
+  const queryString = params.toString();
+  const url = queryString ? `${URLS.INVOICES}?${queryString}` : URLS.INVOICES;
+  
+  const response: any = await fetcher.get(url);
   return mapInvoices(response.data);
 });
 

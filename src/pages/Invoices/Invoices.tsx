@@ -70,8 +70,7 @@ function Invoices() {
   };
 
   const filtered = invoices.filter((inv) => {
-    if (selectedCountry !== 'all' && inv.countryCode !== selectedCountry) return false;
-    if (selectedStatus !== 'all' && inv.status !== selectedStatus) return false;
+    // Note: status, country, and date range are now handled by the backend
     if (withDocsOnly && !inv.hasAttachment) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -114,6 +113,17 @@ function Invoices() {
 
       {/* Date Range & Clear Filters */}
       <div className="invoices__filter-bar">
+        <div className="invoices__status-tabs">
+          {Object.entries(STATUS_LABEL).map(([value, label]) => (
+            <button
+              key={value}
+              className={`invoices__status-tab${selectedStatus === value ? ' invoices__status-tab--active' : ''}`}
+              onClick={() => send({ type: 'SELECT_STATUS', status: value })}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <div className="invoices__date-range">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
@@ -172,14 +182,19 @@ function Invoices() {
       {/* Country Breakdown */}
       <div className="invoices__breakdown">
         {countries.map(code => {
-          const countryDocs = filtered.filter(i => i.countryCode === code);
+          const countryDocs = invoices.filter(i => i.countryCode === code);
           const cTotal = countryDocs.length;
           const cError = countryDocs.filter(i => i.status === 'rejected').length;
           const cPending = countryDocs.filter(i => i.status === 'pending').length;
           const cCompleted = countryDocs.filter(i => i.status === 'accepted').length;
 
           return (
-            <div key={code} className="invoices__country-card">
+            <div 
+              key={code} 
+              className={`invoices__country-card${selectedCountry === code ? ' invoices__country-card--active' : ''}`}
+              onClick={() => send({ type: 'SELECT_COUNTRY', country: selectedCountry === code ? 'all' : code })}
+              style={{ cursor: 'pointer' }}
+            >
               <div className="invoices__country-info">
                 <span className="invoices__country-flag">{COUNTRY_FLAGS[code] || '🌐'}</span>
                 <span className="invoices__country-name">{COUNTRY_NAMES[code] || code}</span>
