@@ -317,7 +317,8 @@
     background: var(--color-card);
     border: 1px solid var(--color-border);
     border-radius: 16px;
-    overflow: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     flex: 1;
     scrollbar-width: thin;
     box-shadow: var(--shadow-sm);

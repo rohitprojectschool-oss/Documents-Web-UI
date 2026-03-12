@@ -15,10 +15,14 @@ html {
 body {
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 #root {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 button { font-family: inherit; }

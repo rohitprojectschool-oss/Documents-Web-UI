@@ -120,8 +120,7 @@
     border-radius: 16px;
     padding: 24px;
     overflow-x: auto;
-    scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
+    -webkit-overflow-scrolling: touch;
     box-shadow: var(--shadow-sm);
     transition: box-shadow var(--transition-normal);
 
