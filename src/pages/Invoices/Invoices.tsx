@@ -27,7 +27,6 @@ const DATE_RANGES: { value: DateRange; labelKey: string }[] = [
   { value: 'thisWeek', labelKey: 'invoices.thisWeek' },
   { value: 'thisMonth', labelKey: 'invoices.thisMonth' },
   { value: 'thisYear', labelKey: 'invoices.thisYear' },
-  { value: 'customDays', labelKey: 'invoices.customDays' },
 ];
 
 const CrimsonLoader = () => (
@@ -111,6 +110,49 @@ function Invoices() {
         </button>
       </div>
 
+      {/* Country Breakdown (Shifted Upwards) */}
+      <div className="invoices__breakdown">
+        {countries.map(code => {
+          const countryDocs = invoices.filter(i => i.countryCode === code);
+          const cTotal = countryDocs.length;
+          const cError = countryDocs.filter(i => i.status === 'rejected').length;
+          const cPending = countryDocs.filter(i => i.status === 'pending').length;
+          const cCompleted = countryDocs.filter(i => i.status === 'accepted').length;
+
+          return (
+            <div 
+              key={code} 
+              className={`invoices__country-card${selectedCountry === code ? ' invoices__country-card--active' : ''}`}
+              onClick={() => send({ type: 'SELECT_COUNTRY', country: selectedCountry === code ? 'all' : code })}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="invoices__country-info">
+                <span className="invoices__country-flag">{COUNTRY_FLAGS[code] || '🌐'}</span>
+                <span className="invoices__country-name">{COUNTRY_NAMES[code] || code}</span>
+              </div>
+              <div className="invoices__country-stats">
+                <div className="invoices__c-stat">
+                  <span className="invoices__c-label">{locale('invoices.total')}</span>
+                  <span className="invoices__c-value invoices__c-value--bold">{cTotal}</span>
+                </div>
+                <div className="invoices__c-stat">
+                  <span className="invoices__c-label">{locale('invoices.error')}</span>
+                  <span className="invoices__c-value invoices__c-value--error">{cError}</span>
+                </div>
+                <div className="invoices__c-stat">
+                  <span className="invoices__c-label">{locale('invoices.pending')}</span>
+                  <span className="invoices__c-value invoices__c-value--pending">{cPending}</span>
+                </div>
+                <div className="invoices__c-stat">
+                  <span className="invoices__c-label">{locale('invoices.completed')}</span>
+                  <span className="invoices__c-value invoices__c-value--completed">{cCompleted}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       {/* Date Range & Clear Filters */}
       <div className="invoices__filter-bar">
         <div className="invoices__status-tabs">
@@ -177,49 +219,6 @@ function Invoices() {
           </label>
           <span className="invoices__toggle-label">{locale('invoices.withDocsOnly')}</span>
         </div>
-      </div>
-
-      {/* Country Breakdown */}
-      <div className="invoices__breakdown">
-        {countries.map(code => {
-          const countryDocs = invoices.filter(i => i.countryCode === code);
-          const cTotal = countryDocs.length;
-          const cError = countryDocs.filter(i => i.status === 'rejected').length;
-          const cPending = countryDocs.filter(i => i.status === 'pending').length;
-          const cCompleted = countryDocs.filter(i => i.status === 'accepted').length;
-
-          return (
-            <div 
-              key={code} 
-              className={`invoices__country-card${selectedCountry === code ? ' invoices__country-card--active' : ''}`}
-              onClick={() => send({ type: 'SELECT_COUNTRY', country: selectedCountry === code ? 'all' : code })}
-              style={{ cursor: 'pointer' }}
-            >
-              <div className="invoices__country-info">
-                <span className="invoices__country-flag">{COUNTRY_FLAGS[code] || '🌐'}</span>
-                <span className="invoices__country-name">{COUNTRY_NAMES[code] || code}</span>
-              </div>
-              <div className="invoices__country-stats">
-                <div className="invoices__c-stat">
-                  <span className="invoices__c-label">{locale('invoices.total')}</span>
-                  <span className="invoices__c-value invoices__c-value--bold">{cTotal}</span>
-                </div>
-                <div className="invoices__c-stat">
-                  <span className="invoices__c-label">{locale('invoices.error')}</span>
-                  <span className="invoices__c-value invoices__c-value--error">{cError}</span>
-                </div>
-                <div className="invoices__c-stat">
-                  <span className="invoices__c-label">{locale('invoices.pending')}</span>
-                  <span className="invoices__c-value invoices__c-value--pending">{cPending}</span>
-                </div>
-                <div className="invoices__c-stat">
-                  <span className="invoices__c-label">{locale('invoices.completed')}</span>
-                  <span className="invoices__c-value invoices__c-value--completed">{cCompleted}</span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
       </div>
 
       {/* Table Section */}

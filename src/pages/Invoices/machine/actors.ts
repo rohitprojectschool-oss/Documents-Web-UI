@@ -33,7 +33,12 @@ export const fetchInvoices = fromPromise(async ({ input }: { input: any }): Prom
       start = new Date(now.getFullYear(), 0, 1);
     }
 
-    const formatDate = (d: Date) => d.toISOString().split('T')[0];
+    const formatDate = (d: Date) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
     params.append('startDate', formatDate(start));
     params.append('endDate', formatDate(new Date()));
   }
