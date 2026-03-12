@@ -3,8 +3,16 @@ import { useRef } from 'react';
 import createInvoicesMachine from './machine';
 import { locale } from '../../locale/locale';
 import { COUNTRY_FLAGS, COUNTRY_NAMES } from '../../constants/countries';
+import { BASE_URL } from '../../constants/urls';
 import type { Invoice, DateRange } from './machine/types';
 import './Invoices.scss';
+
+// Helper to resolve the file URL
+const getFullFileUrl = (url: string) => {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  return `${BASE_URL.replace(/\/$/, '')}${url}`;
+};
 
 const STATUS_LABEL: Record<string, string> = {
   all: locale('common.all'),
@@ -252,7 +260,7 @@ function Invoices() {
                         className="invoices__view-doc-btn"
                         onClick={(e) => { 
                           e.stopPropagation(); 
-                          if (inv.fileUrl) window.open(inv.fileUrl, '_blank');
+                          if (inv.fileUrl) window.open(getFullFileUrl(inv.fileUrl), '_blank');
                         }}
                         title={locale('common.view')}
                       >
@@ -322,7 +330,7 @@ function Invoices() {
                   <button 
                     className="invoices__btn-secondary" 
                     onClick={() => {
-                      if (selectedDocument.fileUrl) window.open(selectedDocument.fileUrl, '_blank');
+                      if (selectedDocument.fileUrl) window.open(getFullFileUrl(selectedDocument.fileUrl), '_blank');
                     }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
@@ -336,7 +344,7 @@ function Invoices() {
                     onClick={() => {
                       if (selectedDocument.fileUrl) {
                         const link = document.createElement('a');
-                        link.href = selectedDocument.fileUrl;
+                        link.href = getFullFileUrl(selectedDocument.fileUrl);
                         link.download = selectedDocument.docId;
                         link.click();
                       }
