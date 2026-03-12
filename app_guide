@@ -215,8 +215,9 @@ recentDocuments:  [{ docId, sourceReference, customer, grossAmount, created, sta
 
 ### Implemented Pages & Features
 
-#### Theme Toggle (Navbar)
+#### Theme Toggle & Logo (Navbar)
 - Navbar now has its own machine (`src/components/Navbar/machine/`) managing `dropdownOpen` and `theme` state.
+- Logo is a modern 3D isometric cube built with SVG.
 - Clicking the user icon opens a dropdown with: user name/email, Light/Dark Mode toggle, Sign Out button.
 - Theme toggle updates `document.documentElement.className` and saves to `localStorage('crimson:theme')`.
 - Navbar receives `user: UserProfile | null` prop from Home.tsx; `onSignOut` is optional.
@@ -224,24 +225,25 @@ recentDocuments:  [{ docId, sourceReference, customer, grossAmount, created, sta
 
 #### Invoices Page (`src/pages/Invoices/`)
 - Full implementation: status tabs (All/Pending/Accepted/Rejected), country selector, search input, document table.
+- Filtering is powered by backend query parameters (status, countryCode, docType, startDate, endDate).
 - Machine: loading → loaded | error; events: REFRESH, SELECT_COUNTRY, SELECT_STATUS, SEARCH.
 - **Attachment Viewing:** 
   - Integrated binary storage support. 
-  - Backend serves files via `/api/invoices/{docId:path}/file`. 
+  - Backend serves files via `/api/invoices/attachment?docId=...` for better handling of IDs with slashes. 
   - `fileUrl` is generated as an absolute URL by the backend.
   - UI uses `window.open(fileUrl, '_blank')` for reliable viewing across all browsers.
   - Filenames are sanitized in backend headers (latin-1 fallback) to prevent server crashes.
-- Filtering is client-side (from context).
 - Country column added to table with badge display.
 - Status badges: green (accepted), red (rejected), yellow (pending).
 
 #### Customers Page (`src/pages/Customers/`)
 - Two-panel layout: left sidebar (country filter with emoji flags + counts), right panel (table + search).
-- Machine: loading → loaded | error; events: REFRESH, SELECT_COUNTRY, SEARCH.
-- Customer data from `customers.txt` (9 customers across AO, NG, PT, SA).
+- Machine: loading → loaded | error; events: REFRESH, SELECT_COUNTRY, SEARCH, ADD_CUSTOMER, EDIT_CUSTOMER, DELETE_CUSTOMER.
+- Customer data dynamically fetched from API.
+- Full CRUD Support: Create, Edit (with pre-filled modal), and Delete (with confirmation modal).
 - Country flags via `COUNTRY_FLAGS` map (code → emoji).
 - Table: CUSTOMER ID, TAX ID, NAME, EMAIL, PHONE, COUNTRY (flag + name + code), ACTIONS (edit/delete icons).
-- Header buttons: Download, Upload, Add Customer.
+- Header buttons: Add Customer. (Download/Upload buttons removed for simplicity).
 
 #### Analytics Page (`src/pages/Analytics/`)
 - KPI cards: Total Documents, Acceptance Rate, Rejection Rate, Active Countries.

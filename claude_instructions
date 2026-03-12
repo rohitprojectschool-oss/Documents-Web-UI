@@ -16,7 +16,7 @@ Follow these core principles when building frontend features:
 ### Invoice Attachment Viewing (FIXED)
 - **Problem:** Many invoices have `docId` values with slashes (e.g. `FT AO/123`). Browsers and standard path parameters often fail to resolve these correctly.
 - **Solution:** 
-  - The backend now uses a special `:path` route that allows literal slashes.
+  - The backend now uses a query parameter `?docId=...` which is inherently safer for handling literal slashes.
   - The backend generates **absolute URLs** in the `fileUrl` field.
   - Front-end must use `window.open(inv.fileUrl, '_blank')` to view documents.
   - The `hasAttachment` boolean in the `Invoice` schema indicates if a file exists in the database.

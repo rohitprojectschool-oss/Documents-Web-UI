@@ -29,4 +29,33 @@ export const fetcher = {
     if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     return response.json() as Promise<T>;
   },
+
+  put: async <T>(path: string, body: unknown, options?: RequestInit): Promise<T> => {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 
+        'Content-Type': 'application/json',
+        ...options?.headers as any 
+      },
+      body: JSON.stringify(body),
+      ...options,
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    return response.json() as Promise<T>;
+  },
+
+  delete: async <T>(path: string, options?: RequestInit): Promise<T> => {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: { 
+        'Content-Type': 'application/json',
+        ...options?.headers as any 
+      },
+      ...options,
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    return response.json() as Promise<T>;
+  },
 };

@@ -339,6 +339,10 @@
     box-shadow: var(--shadow-modal);
     transform: scale(0.95);
     animation: modal-enter 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+    &--small {
+      max-width: 400px;
+    }
   }
 
   @keyframes modal-enter {

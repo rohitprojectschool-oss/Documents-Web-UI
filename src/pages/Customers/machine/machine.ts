@@ -27,6 +27,8 @@ const customersMachine = createMachine({
     searchQuery: '',
     error: null,
     showModal: false,
+    editingId: null,
+    showDeleteConfirm: null,
     formData: { ...INITIAL_FORM },
   }),
   states: {
@@ -53,6 +55,7 @@ const customersMachine = createMachine({
         SELECT_COUNTRY: {
           actions: assign({
             selectedCountry: ({ event }) => event.country,
+            error: null,
           }),
         },
         SEARCH: {
@@ -63,7 +66,28 @@ const customersMachine = createMachine({
         TOGGLE_MODAL: {
           actions: assign({
             showModal: ({ event }) => event.show,
+            editingId: ({ event }) => event.show ? null : null,
             formData: ({ context, event }) => event.show ? context.formData : { ...INITIAL_FORM },
+            error: null,
+          }),
+        },
+        EDIT_CUSTOMER: {
+          actions: assign({
+            showModal: true,
+            editingId: ({ event }) => event.customer.id,
+            error: null,
+            formData: ({ event }) => ({
+              customer_id: event.customer.customerId,
+              customer_tax_id: event.customer.taxId,
+              customer_name: event.customer.name,
+              customer_email: event.customer.email || '',
+              customer_phone: event.customer.phone || '',
+              customer_address_line1: event.customer.addressLine1 || '',
+              customer_address_line2: event.customer.addressLine2 || '',
+              customer_state: event.customer.state || '',
+              customer_country_code: event.customer.countryCode,
+              customer_postal_code: event.customer.postalCode || '',
+            }),
           }),
         },
         UPDATE_FORM: {
@@ -75,6 +99,13 @@ const customersMachine = createMachine({
           }),
         },
         ADD_CUSTOMER: 'submitting',
+        SAVE_CUSTOMER: 'updating',
+        CONFIRM_DELETE: {
+          actions: assign({
+            showDeleteConfirm: ({ event }) => event.id,
+          }),
+        },
+        DELETE_CUSTOMER: 'deleting',
       },
     },
     submitting: {
@@ -85,7 +116,7 @@ const customersMachine = createMachine({
           target: 'loaded',
           actions: [
             assign({
-              customers: ({ context, event }) => [event.output, ...context.customers],
+              customers: ({ context, event }) => [event.output as Customer, ...context.customers],
               showModal: false,
               formData: { ...INITIAL_FORM },
             }),
@@ -95,6 +126,56 @@ const customersMachine = createMachine({
           target: 'loaded',
           actions: assign({
             error: ({ event }) => (event.error as Error).message,
+          }),
+        },
+      },
+    },
+    updating: {
+      invoke: {
+        src: 'updateCustomer',
+        input: ({ context }) => ({
+          id: context.editingId!,
+          data: context.formData,
+        }),
+        onDone: {
+          target: 'loaded',
+          actions: [
+            assign({
+              customers: ({ context, event }) => context.customers.map(c => 
+                c.id === (event.output as Customer).id ? (event.output as Customer) : c
+              ),
+              showModal: false,
+              editingId: null,
+              formData: { ...INITIAL_FORM },
+            }),
+          ],
+        },
+        onError: {
+          target: 'loaded',
+          actions: assign({
+            error: ({ event }) => (event.error as Error).message,
+          }),
+        },
+      },
+    },
+    deleting: {
+      invoke: {
+        src: 'deleteCustomer',
+        input: ({ context }) => context.showDeleteConfirm!,
+        onDone: {
+          target: 'loaded',
+          actions: [
+            assign({
+              customers: ({ context, event }) => context.customers.filter(c => c.id !== (event.output as string)),
+              showDeleteConfirm: null,
+            }),
+          ],
+        },
+        onError: {
+          target: 'loaded',
+          actions: assign({
+            error: ({ event }) => (event.error as Error).message,
+            showDeleteConfirm: null,
           }),
         },
       },

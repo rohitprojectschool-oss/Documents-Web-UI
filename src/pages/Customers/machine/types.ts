@@ -32,6 +32,8 @@ export interface CustomersContext {
   searchQuery: string;
   error: string | null;
   showModal: boolean;
+  editingId: string | null;
+  showDeleteConfirm: string | null; // Stores the ID of the customer to be deleted
   formData: CustomerForm;
 }
 
@@ -41,4 +43,8 @@ export type CustomersEvents =
   | { type: 'SEARCH'; query: string }
   | { type: 'TOGGLE_MODAL'; show: boolean }
   | { type: 'UPDATE_FORM'; field: keyof CustomerForm; value: string }
-  | { type: 'ADD_CUSTOMER' };
+  | { type: 'ADD_CUSTOMER' }
+  | { type: 'EDIT_CUSTOMER'; customer: Customer }
+  | { type: 'SAVE_CUSTOMER' }
+  | { type: 'CONFIRM_DELETE'; id: string | null }
+  | { type: 'DELETE_CUSTOMER' };

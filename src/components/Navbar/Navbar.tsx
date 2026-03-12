@@ -72,9 +72,10 @@ function Navbar({ activeRoute, onNavigate, user, onSignOut }: NavbarProps) {
     <nav className="navbar">
       <div className="navbar__logo">
         <span className="navbar__logo-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="#e53e3e" strokeWidth="2.5" />
-            <path d="M8 12l3 3 5-5" stroke="#e53e3e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 3L3 9.5L16 16L29 9.5L16 3Z" fill="#fc8181" />
+            <path d="M16 16L3 9.5V22.5L16 29V16Z" fill="#e53e3e" />
+            <path d="M29 9.5L16 16V29L29 22.5V9.5Z" fill="#c53030" />
           </svg>
         </span>
         <span className="navbar__logo-text">Crimson</span>

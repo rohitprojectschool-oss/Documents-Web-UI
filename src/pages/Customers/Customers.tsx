@@ -19,12 +19,17 @@ function Customers() {
     );
   }
 
-  const { customers, selectedCountry, searchQuery, showModal, formData } = state.context;
-  const isSubmitting = state.matches('submitting');
+  const { customers, selectedCountry, searchQuery, showModal, formData, editingId, showDeleteConfirm } = state.context;
+  const isSubmitting = state.matches('submitting') || state.matches('updating');
+  const isDeleting = state.matches('deleting');
 
-  const handleAddSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    send({ type: 'ADD_CUSTOMER' });
+    if (editingId) {
+      send({ type: 'SAVE_CUSTOMER' });
+    } else {
+      send({ type: 'ADD_CUSTOMER' });
+    }
   };
 
   // Build country counts
@@ -60,16 +65,6 @@ function Customers() {
           <p className="customers__subtitle">{locale('customers.subtitle')}</p>
         </div>
         <div className="customers__header-actions">
-          <button className="customers__action-btn customers__action-btn--outline customers__action-btn--icon" title={locale('customers.download')}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-            </svg>
-          </button>
-          <button className="customers__action-btn customers__action-btn--outline customers__action-btn--icon" title={locale('customers.upload')}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z" />
-            </svg>
-          </button>
           <button 
             className="customers__action-btn customers__action-btn--primary"
             onClick={() => send({ type: 'TOGGLE_MODAL', show: true })}
@@ -87,10 +82,15 @@ function Customers() {
         <div className="customers__modal-overlay">
           <div className="customers__modal">
             <div className="customers__modal-header">
-              <h2>{locale('customers.addCustomer')}</h2>
+              <h2>{editingId ? 'Edit Customer' : locale('customers.addCustomer')}</h2>
               <button className="customers__modal-close" onClick={() => send({ type: 'TOGGLE_MODAL', show: false })}>&times;</button>
             </div>
-            <form onSubmit={handleAddSubmit} className="customers__form">
+            {state.context.error && (
+              <div className="customers__form-error" style={{ margin: '16px 24px 0', padding: '12px', background: '#fff5f5', border: '1px solid #feb2b2', borderRadius: '8px', color: '#c53030', fontSize: '13px' }}>
+                {state.context.error}
+              </div>
+            )}
+            <form onSubmit={handleFormSubmit} className="customers__form">
               <div className="customers__form-grid">
                 <div className="customers__form-field">
                   <label>{locale('common.customerId')}</label>
@@ -155,9 +155,41 @@ function Customers() {
               </div>
               <div className="customers__modal-footer">
                 <button type="button" className="customers__btn-secondary" onClick={() => send({ type: 'TOGGLE_MODAL', show: false })}>{locale('common.cancel')}</button>
-                <button type="submit" className="customers__btn-primary">{locale('common.createCustomer')}</button>
+                <button type="submit" className="customers__btn-primary" disabled={isSubmitting}>
+                  {isSubmitting ? locale('common.loading') : editingId ? 'Save Changes' : locale('common.createCustomer')}
+                </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteConfirm && (
+        <div className="customers__modal-overlay">
+          <div className="customers__modal customers__modal--small">
+            <div className="customers__modal-header">
+              <h2>Confirm Delete</h2>
+              <button className="customers__modal-close" onClick={() => send({ type: 'CONFIRM_DELETE', id: null })}>&times;</button>
+            </div>
+            {state.context.error && (
+              <div className="customers__form-error" style={{ margin: '16px 24px 0', padding: '12px', background: '#fff5f5', border: '1px solid #feb2b2', borderRadius: '8px', color: '#c53030', fontSize: '13px' }}>
+                {state.context.error}
+              </div>
+            )}
+            <div className="customers__modal-body" style={{ padding: '20px' }}>
+              <p>Are you sure you want to delete this customer? This action cannot be undone.</p>
+            </div>
+            <div className="customers__modal-footer">
+              <button className="customers__btn-secondary" onClick={() => send({ type: 'CONFIRM_DELETE', id: null })}>Cancel</button>
+              <button 
+                className="customers__btn-primary" 
+                style={{ backgroundColor: '#e53e3e' }} 
+                onClick={() => send({ type: 'DELETE_CUSTOMER' })}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -248,12 +280,20 @@ function Customers() {
                       </td>
                       <td>
                         <div className="customers__actions">
-                          <button className="customers__action-icon" title="Edit">
+                          <button 
+                            className="customers__action-icon" 
+                            title="Edit"
+                            onClick={() => send({ type: 'EDIT_CUSTOMER', customer: c })}
+                          >
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                             </svg>
                           </button>
-                          <button className="customers__action-icon customers__action-icon--danger" title="Delete">
+                          <button 
+                            className="customers__action-icon customers__action-icon--danger" 
+                            title="Delete"
+                            onClick={() => send({ type: 'CONFIRM_DELETE', id: c.id })}
+                          >
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                             </svg>
