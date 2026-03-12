@@ -2,10 +2,11 @@
   padding: 16px;
   display: flex;
   flex-direction: column;
+  gap: 24px;
   height: auto;
   min-height: calc(100vh - 64px);
 
-  @media (min-width: 768px) {
+  @media (min-width: 1024px) {
     padding: 28px 32px;
   }
 
@@ -91,13 +92,25 @@
     }
   }
 
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex: 1;
+
+    @media (min-width: 1024px) {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+  }
+
   &__sidebar {
     width: 100%;
     flex-shrink: 0;
     background: var(--color-card);
     border: 1px solid var(--color-border);
     border-radius: 16px;
-    padding: 20px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -105,7 +118,7 @@
     box-shadow: var(--shadow-sm);
 
     @media (min-width: 1024px) {
-      width: 260px;
+      width: 320px;
       gap: 4px;
     }
   }
