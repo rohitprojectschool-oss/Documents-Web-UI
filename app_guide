@@ -225,6 +225,12 @@ recentDocuments:  [{ docId, sourceReference, customer, grossAmount, created, sta
 #### Invoices Page (`src/pages/Invoices/`)
 - Full implementation: status tabs (All/Pending/Accepted/Rejected), country selector, search input, document table.
 - Machine: loading → loaded | error; events: REFRESH, SELECT_COUNTRY, SELECT_STATUS, SEARCH.
+- **Attachment Viewing:** 
+  - Integrated binary storage support. 
+  - Backend serves files via `/api/invoices/{docId:path}/file`. 
+  - `fileUrl` is generated as an absolute URL by the backend.
+  - UI uses `window.open(fileUrl, '_blank')` for reliable viewing across all browsers.
+  - Filenames are sanitized in backend headers (latin-1 fallback) to prevent server crashes.
 - Filtering is client-side (from context).
 - Country column added to table with badge display.
 - Status badges: green (accepted), red (rejected), yellow (pending).

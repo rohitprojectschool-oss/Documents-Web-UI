@@ -1,15 +1,26 @@
-<!-- Follow the /Users/rohit_kalavapudi/Projects/Documents web/frontend/claude_conventions file for general conventions.
+# Frontend Instructions for Crimson Platform
 
-- Now, first thing you're going to do is to create a component like this
-![alt text](image.png)
-- For this, build a parent machine which is called from app.ts - which doesn't have much logic for now but later will have permissions and all
-Now from home page, create a parent machine for all the routes etc. as shown in the picture - for dealing with dashboard, invoices, etc. and settings and users panel etc. create proper structures and use the conventions as specified. -->
+Follow these core principles when building frontend features:
 
+1. **All logic in machines** — components only call `send(...)` and read `state.matches(...)`.
+2. **XState v5 Pattern**:
+   - Machine file layout per component: `index.ts` (provider), `machine.ts` (logic), `actors.ts` (API), `guards.ts`, `actions.ts`, `types.ts`.
+   - References in `machine.ts` must use string names, provided via `machine.provide`.
+3. **Labels** — always use `locale("section.key")`, never hardcode strings.
+4. **API calls** — use `fetcher.get(URLS.*)`, apply a mapper from `src/utils/mappers.ts`, and export as `fromPromise` actor.
+5. **UI Conventions**:
+   - Status badges: accepted (green), rejected (red), pending (yellow).
+   - Use `COUNTRY_FLAGS` emoji map for flags.
+   - Recharts for all visual data representation.
 
-Now, that the above instructions are successfully executed, follow the next steps
-- 
-![alt text](image-1.png) - we need to have a toggle light mode and dark mode option
-- ![alt text](image-2.png) - this is invoices page - 
-- ![alt text](image-3.png) - this is customers page refer /Users/rohit_kalavapudi/Projects/Documents web/frontend/claude_resources
-- /Users/rohit_kalavapudi/Projects/Documents web/frontend/claude_resources - this is analytics page - 
-- ![alt text](image-4.png) - this is settings
+### Invoice Attachment Viewing (FIXED)
+- **Problem:** Many invoices have `docId` values with slashes (e.g. `FT AO/123`). Browsers and standard path parameters often fail to resolve these correctly.
+- **Solution:** 
+  - The backend now uses a special `:path` route that allows literal slashes.
+  - The backend generates **absolute URLs** in the `fileUrl` field.
+  - Front-end must use `window.open(inv.fileUrl, '_blank')` to view documents.
+  - The `hasAttachment` boolean in the `Invoice` schema indicates if a file exists in the database.
+- **Header Safety:** The backend handles filename sanitization (ASCII/UTF8) to ensure non-latin characters in filenames don't crash the server.
+
+6. **URL constants** — only in `src/constants/urls.ts`.
+7. **Reusable components** → `src/components/`.
