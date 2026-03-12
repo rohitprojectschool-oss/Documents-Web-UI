@@ -1,8 +1,7 @@
 // Use environment variable for BASE_URL with the Render service as a fallback
-// For production, we want to use a relative path if they are on the same platform
 const envBaseUrl = import.meta.env.VITE_API_BASE_URL;
 export const BASE_URL = import.meta.env.PROD 
-  ? (envBaseUrl && !envBaseUrl.includes('localhost') ? envBaseUrl : '') 
+  ? (envBaseUrl && !envBaseUrl.includes('localhost') ? envBaseUrl : 'https://documents-web-services.onrender.com') 
   : (envBaseUrl || 'http://localhost:8000');
 
 export const URLS = {
