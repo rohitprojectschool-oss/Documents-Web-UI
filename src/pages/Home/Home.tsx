@@ -38,6 +38,16 @@ function Home() {
     );
   }
 
+  if (state.matches('error')) {
+    return (
+      <div className="home__error">
+        <h2>Something went wrong</h2>
+        <p>{state.context.error}</p>
+        <button onClick={() => send({ type: 'RETRY' })}>Retry</button>
+      </div>
+    );
+  }
+
   return (
     <div className="home">
       <Navbar activeRoute={activeRoute} onNavigate={handleNavigate} user={state.context.user} />

@@ -55,7 +55,10 @@
     transition: all var(--transition-fast);
     flex: 1;
 
-    @media (min-width: 480px) {
+    &--icon {
+      width: 40px;
+      height: 40px;
+      padding: 0;
       flex: none;
     }
 

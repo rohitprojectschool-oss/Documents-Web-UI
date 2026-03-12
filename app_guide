@@ -186,6 +186,7 @@ Auth: session cookie (`credentials: 'include'`). API key also available in user 
 
 #### Add Customer & Upload Invoice
 - Modal forms implemented for both actions.
+- Dashboard now supports direct invoice upload with real-time stats refresh.
 - Real-time list updates after successful creation.
 - Form validation and loading states managed by XState.
 - Responsive design for all modals.

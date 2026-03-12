@@ -13,11 +13,17 @@ export const fetcher = {
   },
 
   post: async <T>(path: string, body: unknown, options?: RequestInit): Promise<T> => {
+    const isFormData = body instanceof FormData;
+    const headers: Record<string, string> = {};
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
+
     const response = await fetch(`${BASE_URL}${path}`, {
       method: 'POST',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      headers: { ...headers, ...options?.headers as any },
+      body: isFormData ? (body as FormData) : JSON.stringify(body),
       ...options,
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);

@@ -1,36 +1,11 @@
 import { useMachine } from '@xstate/react';
-import { useState } from 'react';
 import createCustomersMachine from './machine';
 import { locale } from '../../locale/locale';
+import { COUNTRY_FLAGS, COUNTRY_NAMES } from '../../constants/countries';
 import './Customers.scss';
-
-const COUNTRY_FLAGS: Record<string, string> = {
-  AO: '🇦🇴', NG: '🇳🇬', PT: '🇵🇹', SA: '🇸🇦', GR: '🇬🇷',
-  EE: '🇪🇪', US: '🇺🇸', GB: '🇬🇧', FR: '🇫🇷', DE: '🇩🇪',
-};
-
-const COUNTRY_NAMES: Record<string, string> = {
-  AO: 'Angola', NG: 'Nigeria', PT: 'Portugal', SA: 'Saudi Arabia', GR: 'Greece',
-  EE: 'Estonia', US: 'United States', GB: 'United Kingdom',
-};
-
-const INITIAL_FORM = {
-  customer_id: '',
-  customer_tax_id: '',
-  customer_name: '',
-  customer_email: '',
-  customer_phone: '',
-  customer_address_line1: '',
-  customer_address_line2: '',
-  customer_state: '',
-  customer_country_code: 'AO',
-  customer_postal_code: '',
-};
 
 function Customers() {
   const [state, send] = useMachine(createCustomersMachine());
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState(INITIAL_FORM);
 
   if (state.matches('loading')) {
     return <div className="customers__loading">{locale('common.loading')}</div>;
@@ -44,14 +19,12 @@ function Customers() {
     );
   }
 
-  const { customers, selectedCountry, searchQuery } = state.context;
+  const { customers, selectedCountry, searchQuery, showModal, formData } = state.context;
   const isSubmitting = state.matches('submitting');
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    send({ type: 'ADD_CUSTOMER', data: formData });
-    setShowModal(false);
-    setFormData(INITIAL_FORM);
+    send({ type: 'ADD_CUSTOMER' });
   };
 
   // Build country counts
@@ -87,27 +60,25 @@ function Customers() {
           <p className="customers__subtitle">{locale('customers.subtitle')}</p>
         </div>
         <div className="customers__header-actions">
-          <button className="customers__action-btn customers__action-btn--outline">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <button className="customers__action-btn customers__action-btn--outline customers__action-btn--icon" title={locale('customers.download')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
             </svg>
-            {locale('customers.download')}
           </button>
-          <button className="customers__action-btn customers__action-btn--outline">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <button className="customers__action-btn customers__action-btn--outline customers__action-btn--icon" title={locale('customers.upload')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z" />
             </svg>
-            {locale('customers.upload')}
           </button>
           <button 
             className="customers__action-btn customers__action-btn--primary"
-            onClick={() => setShowModal(true)}
+            onClick={() => send({ type: 'TOGGLE_MODAL', show: true })}
             disabled={isSubmitting}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
             </svg>
-            {isSubmitting ? 'Adding...' : locale('customers.addCustomer')}
+            {isSubmitting ? locale('common.loading') : locale('customers.addCustomer')}
           </button>
         </div>
       </div>
@@ -117,57 +88,57 @@ function Customers() {
           <div className="customers__modal">
             <div className="customers__modal-header">
               <h2>{locale('customers.addCustomer')}</h2>
-              <button className="customers__modal-close" onClick={() => setShowModal(false)}>&times;</button>
+              <button className="customers__modal-close" onClick={() => send({ type: 'TOGGLE_MODAL', show: false })}>&times;</button>
             </div>
             <form onSubmit={handleAddSubmit} className="customers__form">
               <div className="customers__form-grid">
                 <div className="customers__form-field">
-                  <label>Customer ID</label>
+                  <label>{locale('common.customerId')}</label>
                   <input 
                     required 
                     value={formData.customer_id}
-                    onChange={e => setFormData({...formData, customer_id: e.target.value})}
+                    onChange={e => send({ type: 'UPDATE_FORM', field: 'customer_id', value: e.target.value })}
                     placeholder="e.g. CUST-001"
                   />
                 </div>
                 <div className="customers__form-field">
-                  <label>Tax ID (NIF)</label>
+                  <label>{locale('common.taxId')}</label>
                   <input 
                     required 
                     value={formData.customer_tax_id}
-                    onChange={e => setFormData({...formData, customer_tax_id: e.target.value})}
+                    onChange={e => send({ type: 'UPDATE_FORM', field: 'customer_tax_id', value: e.target.value })}
                     placeholder="e.g. 5001441337"
                   />
                 </div>
                 <div className="customers__form-field customers__form-field--full">
-                  <label>Full Name</label>
+                  <label>{locale('common.fullName')}</label>
                   <input 
                     required 
                     value={formData.customer_name}
-                    onChange={e => setFormData({...formData, customer_name: e.target.value})}
+                    onChange={e => send({ type: 'UPDATE_FORM', field: 'customer_name', value: e.target.value })}
                     placeholder="Customer name"
                   />
                 </div>
                 <div className="customers__form-field">
-                  <label>Email</label>
+                  <label>{locale('common.email')}</label>
                   <input 
                     type="email"
                     value={formData.customer_email}
-                    onChange={e => setFormData({...formData, customer_email: e.target.value})}
+                    onChange={e => send({ type: 'UPDATE_FORM', field: 'customer_email', value: e.target.value })}
                   />
                 </div>
                 <div className="customers__form-field">
-                  <label>Phone</label>
+                  <label>{locale('common.phone')}</label>
                   <input 
                     value={formData.customer_phone}
-                    onChange={e => setFormData({...formData, customer_phone: e.target.value})}
+                    onChange={e => send({ type: 'UPDATE_FORM', field: 'customer_phone', value: e.target.value })}
                   />
                 </div>
                 <div className="customers__form-field">
-                  <label>Country</label>
+                  <label>{locale('common.country')}</label>
                   <select 
                     value={formData.customer_country_code}
-                    onChange={e => setFormData({...formData, customer_country_code: e.target.value})}
+                    onChange={e => send({ type: 'UPDATE_FORM', field: 'customer_country_code', value: e.target.value })}
                   >
                     {Object.entries(COUNTRY_NAMES).map(([code, name]) => (
                       <option key={code} value={code}>{name}</option>
@@ -175,16 +146,16 @@ function Customers() {
                   </select>
                 </div>
                 <div className="customers__form-field">
-                  <label>State/Province</label>
+                  <label>{locale('common.stateProvince')}</label>
                   <input 
                     value={formData.customer_state}
-                    onChange={e => setFormData({...formData, customer_state: e.target.value})}
+                    onChange={e => send({ type: 'UPDATE_FORM', field: 'customer_state', value: e.target.value })}
                   />
                 </div>
               </div>
               <div className="customers__modal-footer">
-                <button type="button" className="customers__btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="customers__btn-primary">Create Customer</button>
+                <button type="button" className="customers__btn-secondary" onClick={() => send({ type: 'TOGGLE_MODAL', show: false })}>{locale('common.cancel')}</button>
+                <button type="submit" className="customers__btn-primary">{locale('common.createCustomer')}</button>
               </div>
             </form>
           </div>

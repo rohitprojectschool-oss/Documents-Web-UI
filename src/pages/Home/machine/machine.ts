@@ -31,7 +31,7 @@ const homeMachine = createMachine({
                   }),
                 },
                 onError: {
-                  target: 'done',
+                  target: 'fail',
                   actions: assign({
                     error: ({ event }) => (event.error as Error).message,
                   }),
@@ -39,6 +39,7 @@ const homeMachine = createMachine({
               },
             },
             done: { type: 'final' },
+            fail: { type: 'final' },
           },
         },
         countries: {
@@ -54,15 +55,22 @@ const homeMachine = createMachine({
                   }),
                 },
                 onError: {
-                  target: 'done',
+                  target: 'fail',
+                  actions: assign({
+                    error: ({ event }) => (event.error as Error).message,
+                  }),
                 },
               },
             },
             done: { type: 'final' },
+            fail: { type: 'final' },
           },
         },
       },
-      onDone: 'ready',
+      onDone: [
+        { guard: ({ context }) => !!context.error, target: 'error' },
+        { target: 'ready' }
+      ],
     },
     ready: {
       initial: 'dashboard',

@@ -24,7 +24,21 @@ export const mapCountries = (raw: any[]): Country[] => raw.map(c => ({
   displayOrder: c.display_order,
 }));
 
-export const mapInvoices = (raw: any[]): Invoice[] => raw;
+export const mapInvoices = (raw: any[]): Invoice[] => {
+  return raw.map(i => ({
+    docId: i.docId,
+    sourceReference: i.sourceReference,
+    customer: i.customer,
+    grossAmount: i.grossAmount,
+    created: i.created,
+    status: i.status,
+    docType: i.docType,
+    countryCode: i.countryCode,
+    countryName: i.countryName,
+    hasAttachment: i.hasAttachment,
+    fileUrl: i.fileUrl,
+  }));
+};
 
 export const mapCustomers = (raw: any[]): Customer[] => raw.map(c => ({
   id: c.id,

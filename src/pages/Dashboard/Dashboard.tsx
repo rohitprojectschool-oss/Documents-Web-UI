@@ -1,4 +1,6 @@
+import { useNavigate } from 'react-router-dom';
 import { useMachine } from '@xstate/react';
+import { useRef } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   PieChart, Pie, Cell,
@@ -6,6 +8,7 @@ import {
 import createDashboardMachine from './machine';
 import StatCard from '../../components/StatCard/StatCard';
 import { locale } from '../../locale/locale';
+import { COUNTRIES } from '../../constants/countries';
 import type { RecentDocument } from './machine/types';
 import './Dashboard.scss';
 
@@ -16,17 +19,26 @@ const STATUS_LABEL: Record<RecentDocument['status'], string> = {
 };
 
 function Dashboard() {
-  const [state] = useMachine(createDashboardMachine());
+  const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [state, send] = useMachine(createDashboardMachine());
 
   if (state.matches('loading')) {
-    return <div className="dashboard__loading">Loading...</div>;
+    return <div className="dashboard__loading">{locale('common.loading')}</div>;
   }
 
   if (state.matches('error')) {
-    return <div className="dashboard__error">Failed to load dashboard data.</div>;
+    return <div className="dashboard__error">{locale('common.error')}</div>;
   }
 
-  const { stats, activityData, countryData, docDistribution, recentDocuments } = state.context;
+  const { stats, activityData, countryData, docDistribution, recentDocuments, showModal, formData, selectedDocument } = state.context;
+  const isUploading = state.matches('uploading');
+
+  const handleUploadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.file) return;
+    send({ type: 'UPLOAD_DOCUMENT' });
+  };
 
   return (
     <div className="dashboard">
@@ -35,12 +47,201 @@ function Dashboard() {
           <h1 className="dashboard__title">{locale('dashboard.title')}</h1>
           <p className="dashboard__subtitle">{locale('dashboard.subtitle')}</p>
         </div>
-        <button className="dashboard__upload-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <button 
+          className="dashboard__upload-btn"
+          onClick={() => send({ type: 'TOGGLE_MODAL', show: true })}
+          disabled={isUploading}
+          title={locale('common.uploadDocument')}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
           </svg>
         </button>
       </div>
+
+      {showModal && (
+        <div className="dashboard__modal-overlay">
+          <div className="dashboard__modal">
+            <div className="dashboard__modal-header">
+              <h2>{locale('common.uploadDocument')}</h2>
+              <button className="dashboard__modal-close" onClick={() => send({ type: 'TOGGLE_MODAL', show: false })}>&times;</button>
+            </div>
+            <form onSubmit={handleUploadSubmit} className="dashboard__form">
+              <div className="dashboard__form-grid">
+                <div className="dashboard__form-field dashboard__form-field--full">
+                  <div 
+                    className={`dashboard__dropzone${formData.file ? ' dashboard__dropzone--active' : ''}`}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <input 
+                      ref={fileInputRef}
+                      type="file"
+                      style={{ display: 'none' }}
+                      onChange={e => send({ type: 'UPDATE_FORM', field: 'file', value: e.target.files?.[0] || null })}
+                    />
+                    <div className="dashboard__dropzone-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4a2 2 0 0 1 2-2h14" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                    </div>
+                    <div className="dashboard__dropzone-text">
+                      {formData.file ? formData.file.name : locale('common.uploadInvoice')}
+                    </div>
+                    <div className="dashboard__dropzone-hint">
+                      {formData.file ? `${(formData.file.size / 1024).toFixed(1)} KB` : 'Click to select or drag and drop document'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="dashboard__form-field">
+                  <label>{locale('common.sourceReference')}</label>
+                  <input 
+                    required 
+                    value={formData.sourceReference}
+                    onChange={e => send({ type: 'UPDATE_FORM', field: 'sourceReference', value: e.target.value })}
+                    placeholder="e.g. REF-123"
+                  />
+                </div>
+                <div className="dashboard__form-field">
+                  <label>{locale('common.customerName')}</label>
+                  <input 
+                    required 
+                    value={formData.customer}
+                    onChange={e => send({ type: 'UPDATE_FORM', field: 'customer', value: e.target.value })}
+                    placeholder="e.g. Acme Corp"
+                  />
+                </div>
+                <div className="dashboard__form-field">
+                  <label>{locale('common.grossAmount')}</label>
+                  <input 
+                    required 
+                    type="number"
+                    step="0.01"
+                    value={formData.grossAmount}
+                    onChange={e => send({ type: 'UPDATE_FORM', field: 'grossAmount', value: e.target.value })}
+                    placeholder="0.00"
+                  />
+                </div>
+                <div className="dashboard__form-field">
+                  <label>{locale('common.documentType')}</label>
+                  <select 
+                    value={formData.docType}
+                    onChange={e => send({ type: 'UPDATE_FORM', field: 'docType', value: e.target.value })}
+                  >
+                    <option value="Standard Invoice">{locale('common.standardInvoice')}</option>
+                    <option value="Credit Note">{locale('common.creditNote')}</option>
+                    <option value="Debit Note">{locale('common.debitNote')}</option>
+                  </select>
+                </div>
+                <div className="dashboard__form-field dashboard__form-field--full">
+                  <label>{locale('common.country')}</label>
+                  <select 
+                    value={formData.countryCode}
+                    onChange={e => send({ type: 'UPDATE_FORM', field: 'countryCode', value: e.target.value })}
+                  >
+                    {COUNTRIES.map(c => (
+                      <option key={c.code} value={c.code}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="dashboard__modal-footer">
+                <button type="button" className="dashboard__btn-secondary" onClick={() => send({ type: 'TOGGLE_MODAL', show: false })}>{locale('common.cancel')}</button>
+                <button type="submit" className="dashboard__btn-primary" disabled={!formData.file || isUploading}>
+                  {isUploading ? locale('common.loading') : locale('common.uploadDocument')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Details Modal */}
+      {selectedDocument && (
+        <div className="dashboard__modal-overlay">
+          <div className="dashboard__modal dashboard__modal--large">
+            <div className="dashboard__modal-header">
+              <h2>{locale('invoices.details')}</h2>
+              <button className="dashboard__modal-close" onClick={() => send({ type: 'CLOSE_DETAILS' })}>&times;</button>
+            </div>
+            <div className="dashboard__details-content" style={{ padding: '32px' }}>
+              <div className="dashboard__details-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '32px' }}>
+                <div className="dashboard__detail-item" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{locale('table.docId')}</label>
+                  <span style={{ fontSize: '16px', fontWeight: 500 }}>{selectedDocument.docId}</span>
+                </div>
+                <div className="dashboard__detail-item" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{locale('table.status')}</label>
+                  <span className={`dashboard__status dashboard__status--${selectedDocument.status}`}>
+                    {STATUS_LABEL[selectedDocument.status]}
+                  </span>
+                </div>
+                <div className="dashboard__detail-item" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{locale('table.sourceReference')}</label>
+                  <span>{selectedDocument.sourceReference}</span>
+                </div>
+                <div className="dashboard__detail-item" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{locale('table.customer')}</label>
+                  <span>{selectedDocument.customer}</span>
+                </div>
+                <div className="dashboard__detail-item" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{locale('table.grossAmount')}</label>
+                  <span>{selectedDocument.grossAmount}</span>
+                </div>
+                <div className="dashboard__detail-item" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{locale('table.created')}</label>
+                  <span>{selectedDocument.created}</span>
+                </div>
+                <div className="dashboard__detail-item" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{locale('table.docType')}</label>
+                  <span>{selectedDocument.docType}</span>
+                </div>
+              </div>
+            </div>
+            <div className="dashboard__modal-footer">
+              {selectedDocument.hasAttachment && (
+                <div style={{ marginRight: 'auto', display: 'flex', gap: '8px' }}>
+                  <button 
+                    className="dashboard__btn-secondary" 
+                    onClick={() => {
+                      if (selectedDocument.fileUrl) window.open(selectedDocument.fileUrl, '_blank');
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    {locale('common.view')}
+                  </button>
+                  <button 
+                    className="dashboard__btn-secondary" 
+                    onClick={() => {
+                      if (selectedDocument.fileUrl) {
+                        const link = document.createElement('a');
+                        link.href = selectedDocument.fileUrl;
+                        link.download = selectedDocument.docId;
+                        link.click();
+                      }
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4a2 2 0 0 1 2-2h14" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    {locale('common.download')}
+                  </button>
+                </div>
+              )}
+              <button className="dashboard__btn-primary" onClick={() => send({ type: 'CLOSE_DETAILS' })}>
+                {locale('common.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stat Cards */}
       <div className="dashboard__stats">
@@ -184,12 +385,15 @@ function Dashboard() {
       <div className="dashboard__recent">
         <div className="dashboard__recent-header">
           <h3>{locale('dashboard.recentDocuments')}</h3>
-          <button className="dashboard__view-all">{locale('dashboard.viewAll')} →</button>
+          <button className="dashboard__view-all" onClick={() => navigate('/invoices')}>
+            {locale('dashboard.viewAll')} →
+          </button>
         </div>
         <div className="dashboard__table-wrapper">
           <table className="dashboard__table">
             <thead>
               <tr>
+                <th style={{ width: '40px' }}></th>
                 <th>{locale('table.docId')}</th>
                 <th>{locale('table.sourceReference')}</th>
                 <th>{locale('table.customer')}</th>
@@ -201,7 +405,14 @@ function Dashboard() {
             </thead>
             <tbody>
               {recentDocuments.map((doc) => (
-                <tr key={doc.docId}>
+                <tr key={doc.docId} onClick={() => send({ type: 'OPEN_DETAILS', document: doc })} style={{ cursor: 'pointer' }}>
+                  <td style={{ textAlign: 'center' }}>
+                    {doc.hasAttachment && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}>
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                      </svg>
+                    )}
+                  </td>
                   <td className="dashboard__table-doc-id">{doc.docId}</td>
                   <td>{doc.sourceReference}</td>
                   <td>{doc.customer}</td>

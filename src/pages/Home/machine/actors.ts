@@ -11,5 +11,7 @@ export const fetchUser = fromPromise(async (): Promise<UserProfile> => {
 
 export const fetchCountries = fromPromise(async (): Promise<Country[]> => {
   const response: any = await fetcher.get(URLS.COUNTRY_SETTINGS);
-  return mapCountries(response.data.countries);
+  const countries = mapCountries(response.data.countries);
+  localStorage.setItem('crimson:countries', JSON.stringify(countries));
+  return countries;
 });
